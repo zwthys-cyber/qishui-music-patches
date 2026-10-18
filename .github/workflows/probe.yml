@@ -1,0 +1,56 @@
+name: Build observational probe D1 for iOS 17 TrollStore
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Download exact input
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build dist
+          gh release download input-21.2.0 --repo "$GITHUB_REPOSITORY" --pattern qishui-21.2.0-original.ipa --dir build
+      - name: Test observational wrapper behavior on macOS
+        run: |
+          set -o pipefail
+          xcrun --sdk macosx clang -fobjc-arc -Wall -Wextra -Werror -framework Foundation src/ProbeCore.m tests/ProbeTests.m -o build/ProbeTests 2>&1 | tee build/tests-compile.log
+          build/ProbeTests | tee dist/probe-tests.txt
+      - name: Compile iPhoneOS probe and sign it
+        run: |
+          set -o pipefail
+          xcrun --sdk iphoneos clang -arch arm64 -miphoneos-version-min=17.0 -fobjc-arc -Wall -Wextra -Werror -dynamiclib -framework Foundation -framework UIKit -Wl,-install_name,@executable_path/Frameworks/QishuiProbeD1.dylib src/ProbeCore.m src/ProbeUI.m -o build/QishuiProbeD1.dylib 2>&1 | tee build/ios-compile.log
+          codesign --force --sign - --timestamp=none build/QishuiProbeD1.dylib
+          codesign --verify --strict build/QishuiProbeD1.dylib
+      - name: Inject probe while retaining original app code
+        run: |
+          set -o pipefail
+          python3 scripts/probe.py prepare --input build/qishui-21.2.0-original.ipa --dylib build/QishuiProbeD1.dylib --work build/probe-work 2>&1 | tee build/prepare.log
+      - name: Sign and verify app for TrollStore
+        run: |
+          set -o pipefail
+          codesign --force --sign - --timestamp=none --generate-entitlement-der --entitlements build/probe-work/entitlements.plist build/probe-work/Payload/SchubertAppStore.app 2>&1 | tee build/sign.log
+          codesign --verify --strict --verbose=2 build/probe-work/Payload/SchubertAppStore.app 2>&1 | tee dist/signature-verification.txt
+      - name: Package and check independent output
+        run: |
+          set -o pipefail
+          python3 scripts/ipa.py package --work build/probe-work --output dist/Qishui-21.2.0-observational-D1.ipa
+          python3 scripts/probe.py verify --input build/qishui-21.2.0-original.ipa --output dist/Qishui-21.2.0-observational-D1.ipa --dylib build/QishuiProbeD1.dylib --report dist/verification.json 2>&1 | tee build/verify.log
+          shasum -a 256 dist/Qishui-21.2.0-observational-D1.ipa > dist/SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Qishui-observational-D1
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Failure logs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: D1-failure-logs
+          path: build/*.log
+          if-no-files-found: ignore

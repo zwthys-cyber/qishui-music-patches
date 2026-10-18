@@ -33,3 +33,7 @@ r1 构建和静态验证通过，但用户真机确认仍需完整播放广告�
 r2 编译、八处补丁校验、签名和打包后对比均已通过：[Actions 39137795051](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137795051)。[下载 r2 实验版与验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137795051/artifacts/12140542384)。解压 Artifact 中的 `Qishui-21.2.0-TrollStore-experimental-r2.ipa` 并使用 TrollStore 覆盖安装，彻底退出 App 后重开。
 
 r2 已收到真机失败反馈，视频仍需完整播放。现阶段没有已验证的完整去广告包；开屏路径与下一步运行时定位需求见分析记录。CI 成功不等于真机效果或服务端发奖成功。
+
+## iPhone 15 Pro Max / iOS 17.0 的下一步定位
+
+两版均未命中实际视频等待路径，现准备 [D1 设备观察构建](docs/PROBE.md)，确认实际安装版本、广告页类名及入口调用。D1 保留原广告行为，仅采集本机诊断日志；完整去广告目标尚未完成。
