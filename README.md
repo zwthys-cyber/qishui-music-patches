@@ -28,12 +28,12 @@ CI 检查精确输入 SHA256、原始指令、指令位置、Apple 汇编输出�
 
 ## 当前构建状态
 
-r1 构建和静态验证通过，但用户真机确认仍需完整播放广告，故未达到目标。r2 的修改依据和局限见 [分析记录](docs/ANALYSIS.md)。
+r1/r2 均有真机失败反馈，不是完整去广告版。D1 日志已经确认实际页面为 STAd.SplashAdViewController 与 BDARVLynxViewController。
 
-r2 编译、八处补丁校验、签名和打包后对比均已通过：[Actions 39137795051](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137795051)。[下载 r2 实验版与验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137795051/artifacts/12140542384)。解压 Artifact 中的 `Qishui-21.2.0-TrollStore-experimental-r2.ipa` 并使用 TrollStore 覆盖安装，彻底退出 App 后重开。
+[R3 下载及验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39141124019/artifacts/12141033639) / [修改依据](docs/R3.md)。R3 使用独立清单移除 r1/r2 八处等待改动，加入开屏展示资格修改，接入已确认控制器的真实首帧/SDK 完成/正常关闭链路。GitHub 编译、测试、签名和打包对比已通过，真机无开屏、视频提前结束及完整歌曲权限仍待验证。
 
-r2 已收到真机失败反馈，视频仍需完整播放。现阶段没有已验证的完整去广告包；开屏路径与下一步运行时定位需求见分析记录。CI 成功不等于真机效果或服务端发奖成功。
+用 TrollStore 覆盖安装 R3，彻底退出后重开，确认“日志 R3”。如失败，复现后导出 Qishui-Probe-R3.txt。前置广告权益入口弹窗可能继续出现；未宣称完整去广告目标已实现。
 
 ## iPhone 15 Pro Max / iOS 17.0 的下一步定位
 
-两版均未命中实际视频等待路径，现准备 [D1 设备观察构建](docs/PROBE.md)，确认实际安装版本、广告页类名及入口调用。D1 保留原广告行为，仅采集本机诊断日志；完整去广告目标尚未完成。
+两版失败后，已使用 [D1 设备观察构建](docs/PROBE.md)，确认实际安装版本和广告页类名；原始诊断说明保留供查阅。当前修改版使用上面的 R3。
