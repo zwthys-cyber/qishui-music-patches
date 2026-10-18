@@ -1,6 +1,6 @@
 # 汽水音乐 21.2.0 巨魔实验补丁
 
-本项目针对指定解密 IPA 制作**实验版**。目前修改本地激励广告等待逻辑，尚未在 iPhone 上验证，不承诺已经实现免广告听歌。
+本项目针对指定解密 IPA 制作**实验版**。r1 真机反馈为仍需完整观看广告，未达到目标；r2 新增 Lynx 播放进度与广告播放器累计观看时长修改，等待真机验证。
 
 编译、输入校验、补丁检查、签名检查和打包全部在 GitHub Actions 的 macOS runner 上运行。服务器仅准备源文件和进行静态分析，没有运行本项目的编译和验证流程。
 
@@ -9,6 +9,8 @@
 - 汽水 STAd 的兜底视频计时分支：首次计时回调进入现有完成逻辑。
 - BDA 原生广告倒计时：首次未暂停计时进入现有完成逻辑。
 - BDA 视频模型的有效播放和激励时长 getter：返回 1 秒。
+- r2：两套 Lynx 广告视频回调在正常进度事件中报告全长。
+- r2：两个广告专用播放器的累计观看时长 getter 返回完成值；没有修改通用音乐播放器。
 
 不会直接伪造账号会员状态。正常发奖请求和服务端响应处理保留。是否真正获得听歌权益，需要真机确认；Lynx/动态下发广告流程也可能不受这些修改影响。
 
@@ -26,8 +28,8 @@ CI 检查精确输入 SHA256、原始指令、指令位置、Apple 汇编输出�
 
 ## 当前构建状态
 
-按用户要求将仓库改为公开后，[Actions 39137128405](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137128405) 已于 2026-10-18 成功完成：Apple SDK 汇编、精确输入与四处补丁校验、错误输入拒绝、签名检查、打包和签名后 section/资源对比均通过。编译与验证均在 GitHub runner 执行。
+r1 构建和静态验证通过，但用户真机确认仍需完整播放广告，故未达到目标。r2 的修改依据和局限见 [分析记录](docs/ANALYSIS.md)。
 
-[下载实验版及验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137128405/artifacts/12140142866)（Actions Artifact，保留 14 天）。解压后取得 `Qishui-21.2.0-TrollStore-experimental-r1.ipa`。
+r2 编译、八处补丁校验、签名和打包后对比均已通过：[Actions 39137795051](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137795051)。[下载 r2 实验版与验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137795051/artifacts/12140542384)。解压 Artifact 中的 `Qishui-21.2.0-TrollStore-experimental-r2.ipa` 并使用 TrollStore 覆盖安装，彻底退出 App 后重开。
 
-真机启动、广告结束、完整音乐播放及服务端发奖尚未验证。CI 成功不等于已经实现免广告免费听歌。
+前置“看视频全天免费听”弹窗可能继续出现。需要观察的是进入视频后是否提前结束，以及关闭广告后歌曲是否可以完整播放。CI 成功不等于真机效果或服务端发奖成功。
