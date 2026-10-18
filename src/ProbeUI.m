@@ -3,6 +3,9 @@
 #import <objc/runtime.h>
 #import <mach-o/dyld.h>
 
+#ifndef QS_PROBE_BUILD
+#define QS_PROBE_BUILD @"D1"
+#endif
 static char QSSeenViewKey;
 static BOOL QSInteresting(NSString *name) {
     NSString *lower = name.lowercaseString;
@@ -46,11 +49,11 @@ static void QSDescribeViews(UIView *view, NSUInteger depth) {
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
     button.backgroundColor = [UIColor colorWithRed:0.1 green:0.35 blue:0.8 alpha:0.9];
     button.layer.cornerRadius = 8;
-    [button setTitle:@"诊断 D1" forState:UIControlStateNormal];
+    [button setTitle:[@"日志 " stringByAppendingString:QS_PROBE_BUILD] forState:UIControlStateNormal];
     [button setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
     [button addTarget:self action:@selector(exportLog) forControlEvents:UIControlEventTouchUpInside];
     self.button = button;
-    QSLog(@"PROBE_D1_UI_ATTACHED");
+    QSLog([NSString stringWithFormat:@"PROBE_%@_UI_ATTACHED", QS_PROBE_BUILD]);
     __weak QSProbe *weakSelf = self;
     void (^refresh)(void) = ^{
         QSProbe *probe = weakSelf;
@@ -81,7 +84,7 @@ static void QSDescribeViews(UIView *view, NSUInteger depth) {
     while (top.presentedViewController) top = top.presentedViewController;
     if (!top || [top isKindOfClass:UIActivityViewController.class]) return;
     QSLog(@"USER_EXPORT_LOG");
-    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"Qishui-Probe-D1.txt"];
+    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"Qishui-Probe-%@.txt", QS_PROBE_BUILD]];
     [QSLogSnapshot() writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:NULL];
     UIActivityViewController *share = [[UIActivityViewController alloc] initWithActivityItems:@[[NSURL fileURLWithPath:path]] applicationActivities:nil];
     share.popoverPresentationController.sourceView = top.view;
@@ -95,7 +98,7 @@ static void QSDescribeViews(UIView *view, NSUInteger depth) {
 @implementation QSProbeInstaller
 + (void)load {
     @autoreleasepool {
-        QSLog([NSString stringWithFormat:@"PROBE_D1_LOADED main_slide=0x%llx", (unsigned long long)_dyld_get_image_vmaddr_slide(0)]);
+        QSLog([NSString stringWithFormat:@"PROBE_%@_LOADED main_slide=0x%llx", QS_PROBE_BUILD, (unsigned long long)_dyld_get_image_vmaddr_slide(0)]);
         Method appeared = class_getInstanceMethod(UIViewController.class, @selector(viewDidAppear:));
         IMP original = method_getImplementation(appeared);
         IMP replacement = imp_implementationWithBlock(^(UIViewController *receiver, BOOL animated) {

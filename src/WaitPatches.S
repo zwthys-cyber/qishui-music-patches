@@ -27,3 +27,9 @@ _qs_completed_watch_time:
     movk x8, #0x2000, lsl #32
     fmov d0, x8
     ret
+
+// Existing SplashServiceManager callers take their normal non-display branch.
+.globl _qs_no_splash
+_qs_no_splash:
+    mov w0, #0
+    ret

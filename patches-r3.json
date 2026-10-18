@@ -1,0 +1,23 @@
+{
+  "bundle_id": "com.soda.music",
+  "version": "21.2.0",
+  "executable": "SchubertAppStore",
+  "ipa_sha256": "700035465c39a86e58b0b3d6b2d42d77a0af383827d6ee6e03c4427768f2bba2",
+  "executable_sha256": "aefda7ce1de393fe8bb91237d118e3d2c60870b86df2414932ec270b81c5fab5",
+  "patches": [
+    {
+      "name": "splash_policy_body",
+      "offset": 118375464,
+      "expected": "fa67bba9f85f01a9",
+      "symbol": "qs_no_splash",
+      "reason": "STAd SplashServiceManager display eligibility returns false before either launch path can present"
+    },
+    {
+      "name": "splash_policy_trampoline",
+      "offset": 118380628,
+      "expected": "f14207b0319a42f9",
+      "symbol": "qs_no_splash",
+      "reason": "Version-locked Swift dispatch entry for the same display eligibility policy"
+    }
+  ]
+}

@@ -14,12 +14,12 @@ DYLIB_PATH = '@executable_path/' + LIBRARY
 BUILD = 'D1'
 
 
-def inject(data):
+def inject(data, dylib_path=DYLIB_PATH, expected_digest=MANIFEST['executable_sha256']):
     macho = MachO(data)
-    require(digest(data) == MANIFEST['executable_sha256'], 'Wrong executable')
+    require(digest(data) == expected_digest, 'Wrong executable')
     count, size = struct.unpack_from('<II', data, 16)
     pos = 32 + size
-    raw = DYLIB_PATH.encode() + b'\0'
+    raw = dylib_path.encode() + b'\0'
     length = (24 + len(raw) + 7) & ~7
     first_section = min(o for _, s, o, flags in macho.sections.values() if s and o and flags & 0xff not in (1, 0xc, 0x12))
     require(pos + length <= first_section, 'Insufficient header padding')
@@ -27,7 +27,7 @@ def inject(data):
     for cmd, at in macho.commands:
         if cmd in (0xc, 0x80000018, 0x8000001f):
             name_at = at + struct.unpack_from('<I', data, at + 8)[0]
-            require(data[name_at:data.index(b'\0', name_at)].decode() != DYLIB_PATH, 'Already injected')
+            require(data[name_at:data.index(b'\0', name_at)].decode() != dylib_path, 'Already injected')
     command = struct.pack('<IIIIII', 0xc, length, 24, 0, 0x10000, 0x10000) + raw
     command += b'\0' * (length - len(command))
     result = bytearray(data)

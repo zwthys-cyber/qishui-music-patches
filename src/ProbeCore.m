@@ -23,7 +23,7 @@ BOOL QSTraceObjectMethod(NSString *className, NSString *selectorName) {
     Class cls = NSClassFromString(className);
     SEL sel = NSSelectorFromString(selectorName);
     Method method = cls ? class_getInstanceMethod(cls, sel) : NULL;
-    if (!method) { QSLog([@"MISSING " stringByAppendingString:className]); return NO; }
+    if (!method) { QSLog([NSString stringWithFormat:@"MISSING_%@ %@ %@", cls ? @"METHOD" : @"CLASS", className, selectorName]); return NO; }
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
     if (signature.numberOfArguments != 5 || strcmp(signature.methodReturnType, "v") != 0) {
         QSLog([@"SKIP signature " stringByAppendingString:selectorName]); return NO;
