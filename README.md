@@ -28,6 +28,13 @@ CI 检查精确输入 SHA256、原始指令、指令位置、Apple 汇编输出�
 
 ## 当前构建状态
 
+**当前下载：[R3.1 IPA 直链](https://github.com/zwthys-cyber/qishui-music-patches/releases/download/r3.1/Qishui-21.2.0-TrollStore-R3.1.ipa)** / [发布说明与验证报告](https://github.com/zwthys-cyber/qishui-music-patches/releases/tag/r3.1)。
+
+用户明确表示安装 R3 后仍导出 D1 格式日志，不能仅凭标签认定安装错误。R3.1 提升安装构建号至 100212041、隔离诊断类名和全局符号，并记录实际加载库；右上导出按钮为“日志 R3.1”。GitHub 编译和检查已通过，真实去广告与发奖仍待确认。详情见 [R3.1 排查记录](docs/R3.md)。
+
+先从后台划掉汽水，再用 TrollStore 覆盖安装；打开后复现并从右上“日志 R3.1”导出 Qishui-Probe-R3.1.txt。无需先卸载应用。
+
+
 r1/r2 均有真机失败反馈，不是完整去广告版。D1 日志已经确认实际页面为 STAd.SplashAdViewController 与 BDARVLynxViewController。
 
 [R3 下载及验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39141124019/artifacts/12141033639) / [修改依据](docs/R3.md)。R3 使用独立清单移除 r1/r2 八处等待改动，加入开屏展示资格修改，接入已确认控制器的真实首帧/SDK 完成/正常关闭链路。GitHub 编译、测试、签名和打包对比已通过，真机无开屏、视频提前结束及完整歌曲权限仍待验证。
