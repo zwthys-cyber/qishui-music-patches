@@ -22,3 +22,9 @@ D1 从原始解密 IPA 构建，保留原主程序代码段，不应用 r1/r2 �
 - CI 不代表设备端加载、日志导出或去广告目标通过。
 
 收到日志后，根据实际被调用路径继续修改；不能将 UI 截图或 CI 成功当作完整去广告的证明。
+
+## 构建结果
+
+[Actions 39139516093](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39139516093) 已通过 macOS 参数转发/拒绝错误 ABI 测试、iPhoneOS 编译、签名检查以及打包后的 section 和资源对比。[下载 D1 与验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39139516093/artifacts/12141545389)。
+
+诊断按钮挂在应用已有窗口，不创建额外 UIWindow；页面控制与广告业务仍需设备日志确认。完整去广告尚未完成。
