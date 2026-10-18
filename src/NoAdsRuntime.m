@@ -99,12 +99,18 @@ static IMP QSInstall(Class cls, SEL selector, IMP replacement) {
         QSLog(@"R3_1_RUNTIME_LOADED");
         NSBundle *bundle = NSBundle.mainBundle;
         QSLog([NSString stringWithFormat:@"R3_1_BUNDLE build=%@ marker=%@", [bundle objectForInfoDictionaryKey:@"CFBundleVersion"], [bundle objectForInfoDictionaryKey:@"QSProbeBuild"]]);
+        BOOL oldModifierPresent = NO;
         for (uint32_t i = 0; i < _dyld_image_count(); i++) {
             const char *raw = _dyld_get_image_name(i);
             if (!raw) continue;
             NSString *name = [NSString stringWithUTF8String:raw].lastPathComponent;
+            if ([name isEqualToString:@"QishuiR3.dylib"]) oldModifierPresent = YES;
             if ([name containsString:@"Qishui"] || [name containsString:@"Probe"])
                 QSLog([NSString stringWithFormat:@"R3_1_LIBRARY %@ header=%p", name, (const void *)_dyld_get_image_header(i)]);
+        }
+        if (oldModifierPresent) {
+            QSLog(@"R3_1_OLD_MODIFIER_PRESENT avoiding_duplicate_reward_hooks");
+            return;
         }
         Class cls = NSClassFromString(@"BDARVLynxViewController");
         SEL firstFrame = NSSelectorFromString(@"videoFirstFrame");

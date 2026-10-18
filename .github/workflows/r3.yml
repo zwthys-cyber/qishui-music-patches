@@ -18,9 +18,9 @@ jobs:
       - name: Compile and test callback guards on macOS
         run: |
           set -o pipefail
-          xcrun --sdk macosx clang -fobjc-arc -Wall -Wextra -Werror -framework Foundation src/AdFlow.m tests/AdFlowTests.m -o build/AdFlowTests 2>&1 | tee build/flow-tests-compile.log
+          xcrun --sdk macosx clang -include src/IdentityR31.h -fobjc-arc -Wall -Wextra -Werror -framework Foundation src/AdFlow.m tests/AdFlowTests.m -o build/AdFlowTests 2>&1 | tee build/flow-tests-compile.log
           build/AdFlowTests | tee dist/flow-tests.txt
-          xcrun --sdk macosx clang -fobjc-arc -Wall -Wextra -Werror -framework Foundation src/ProbeCore.m tests/ProbeTests.m -o build/ProbeTests 2>&1 | tee build/probe-tests-compile.log
+          xcrun --sdk macosx clang -include src/IdentityR31.h -fobjc-arc -Wall -Wextra -Werror -framework Foundation src/ProbeCore.m tests/ProbeTests.m -o build/ProbeTests 2>&1 | tee build/probe-tests-compile.log
           build/ProbeTests | tee dist/probe-tests.txt
       - name: Compile iOS 17 ARM64 runtime and splash instructions
         run: |
