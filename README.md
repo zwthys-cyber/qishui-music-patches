@@ -14,7 +14,7 @@
 
 ## 构建
 
-输入 IPA 保存在本私有仓库的 `input-21.2.0` Release，未提交至 Git 历史。运行 Actions → Build Qishui 21.2.0 experimental TrollStore IPA，成功后从 Artifact 下载实验 IPA、SHA256 和 `verification.json`。
+输入 IPA 保存在本仓库的 `input-21.2.0` Release，未提交至 Git 历史。运行 Actions → Build Qishui 21.2.0 experimental TrollStore IPA，成功后从 Artifact 下载实验 IPA、SHA256 和 `verification.json`。
 
 签名采用原有 entitlements 的 ad-hoc 签名，再交由 TrollStore 安装处理。参考 [TrollStore 官方说明](https://github.com/opa334/TrollStore)。安装使用原 Bundle ID，可能覆盖现有安装，请先保留原 IPA 和所需数据。
 
@@ -26,8 +26,8 @@ CI 检查精确输入 SHA256、原始指令、指令位置、Apple 汇编输出�
 
 ## 当前构建状态
 
-2026-10-18 首次 Actions 运行 [39136886542](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39136886542) 在 runner 启动前被账户账单限制拦截，GitHub 返回：
+按用户要求将仓库改为公开后，[Actions 39137128405](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137128405) 已于 2026-10-18 成功完成：Apple SDK 汇编、精确输入与四处补丁校验、错误输入拒绝、签名检查、打包和签名后 section/资源对比均通过。编译与验证均在 GitHub runner 执行。
 
-> The job was not started because recent account payments have failed or your spending limit needs to be increased.
+[下载实验版及验证报告](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39137128405/artifacts/12140142866)（Actions Artifact，保留 14 天）。解压后取得 `Qishui-21.2.0-TrollStore-experimental-r1.ipa`。
 
-因此编译、补丁验证、签名和 IPA 打包均未执行，也没有可安装成品。需要账户在 Settings → Billing & plans 处理付款或 Actions 支出上限，再重跑本工作流。没有将编译或验证迁回服务器。
+真机启动、广告结束、完整音乐播放及服务端发奖尚未验证。CI 成功不等于已经实现免广告免费听歌。

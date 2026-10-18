@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - name: Download exact private input
+      - name: Download exact version-locked input
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
