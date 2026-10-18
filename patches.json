@@ -1,0 +1,37 @@
+{
+  "bundle_id": "com.soda.music",
+  "version": "21.2.0",
+  "executable": "SchubertAppStore",
+  "ipa_sha256": "700035465c39a86e58b0b3d6b2d42d77a0af383827d6ee6e03c4427768f2bba2",
+  "executable_sha256": "aefda7ce1de393fe8bb91237d118e3d2c60870b86df2414932ec270b81c5fab5",
+  "patches": [
+    {
+      "name": "fallback_wait_branch",
+      "offset": 117313864,
+      "expected": "85060054",
+      "symbol": "qs_skip_wait",
+      "reason": "STAd fallback timer: remove the conditional jump back to decrement; retain completion callback"
+    },
+    {
+      "name": "native_wait_branch",
+      "offset": 6778800,
+      "expected": "cb040054",
+      "symbol": "qs_finish_native",
+      "reason": "BDA native timer: take existing completion path on first active timer tick"
+    },
+    {
+      "name": "sdk_effective_play_time",
+      "offset": 6958468,
+      "expected": "882c0ab008c189b9f07cf117",
+      "symbol": "qs_one_second",
+      "reason": "BDARVADVideoInfo effectivePlayTime: return double 1.0"
+    },
+    {
+      "name": "sdk_effective_inspire_time",
+      "offset": 6958540,
+      "expected": "882c0ab008cd89b9de7cf117",
+      "symbol": "qs_one_second",
+      "reason": "BDARVADVideoInfo effectiveInspireTime: return double 1.0"
+    }
+  ]
+}

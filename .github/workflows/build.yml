@@ -1,0 +1,58 @@
+name: Build Qishui 21.2.0 experimental TrollStore IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Download exact private input
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build dist
+          gh release download input-21.2.0 --repo "$GITHUB_REPOSITORY" --pattern qishui-21.2.0-original.ipa --dir build
+      - name: Compile ARM64 patch instructions with Apple SDK
+        run: |
+          set -o pipefail
+          xcrun --sdk iphoneos clang -arch arm64 -miphoneos-version-min=14.0 -c src/WaitPatches.S -o build/WaitPatches.o 2>&1 | tee build/compile.log
+          xcrun otool -tvV build/WaitPatches.o | tee dist/assembled-instructions.txt
+      - name: Guard input and patch only reviewed instructions
+        run: |
+          set -o pipefail
+          python3 scripts/ipa.py prepare --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --work build/work 2>&1 | tee build/prepare.log
+      - name: Ad-hoc sign for TrollStore and verify code signature
+        run: |
+          set -o pipefail
+          codesign --force --sign - --timestamp=none --generate-entitlement-der --entitlements build/work/entitlements.plist build/work/Payload/SchubertAppStore.app 2>&1 | tee build/sign.log
+          codesign --verify --strict --verbose=2 build/work/Payload/SchubertAppStore.app 2>&1 | tee dist/signature-verification.txt
+      - name: Package and independently compare signed IPA
+        run: |
+          set -o pipefail
+          python3 scripts/ipa.py package --work build/work --output dist/Qishui-21.2.0-TrollStore-experimental-r1.ipa
+          python3 scripts/ipa.py verify --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --output dist/Qishui-21.2.0-TrollStore-experimental-r1.ipa --report dist/verification.json 2>&1 | tee build/verify.log
+          shasum -a 256 dist/Qishui-21.2.0-TrollStore-experimental-r1.ipa > dist/SHA256SUMS
+          cp build/compile.log dist/
+      - name: Upload experimental IPA and evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Qishui-21.2.0-TrollStore-experimental-r1
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: diagnostics
+          path: |
+            build/*.log
+            dist/assembled-instructions.txt
+          if-no-files-found: ignore
