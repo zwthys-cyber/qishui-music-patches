@@ -13,7 +13,7 @@ from probe import inject
 
 MANIFEST = json.loads((Path(__file__).resolve().parents[1] / 'patches-r3.json').read_text())
 ipa.MANIFEST = MANIFEST
-LIBRARY = 'Frameworks/QishuiR3.dylib'
+LIBRARY = 'Frameworks/QishuiR31.dylib'
 LOAD_PATH = '@executable_path/' + LIBRARY
 
 
@@ -24,8 +24,9 @@ def expected_binary(original, obj):
 
 def info_after(raw):
     info = plistlib.loads(raw)
-    info['CFBundleDisplayName'] = '汽水R3'
-    info['QSProbeBuild'] = 'R3'
+    info['CFBundleDisplayName'] = '汽水R3.1'
+    info['CFBundleVersion'] = str(int(info['CFBundleVersion']) + 31)
+    info['QSProbeBuild'] = 'R3.1'
     return info
 
 
@@ -46,11 +47,14 @@ def prepare(args):
     target.parent.mkdir(exist_ok=True)
     library = Path(args.dylib).read_bytes()
     MachO(library)
+    require(b'R3_1_RUNTIME_LOADED' in library, 'Missing literal R3.1 startup stamp')
+    require(b'QSR31ProbeInstaller' in library and b'QSR31NoAdsInstaller' in library, 'Missing isolated runtime class names')
+    require(b'QSProbeInstaller\0' not in library, 'Legacy D1/R3 runtime class collision')
     target.write_bytes(library)
     target.chmod(0o755)
     info = work / app / 'Info.plist'
     info.write_bytes(plistlib.dumps(info_after(info.read_bytes())))
-    print(json.dumps({'build':'R3', 'splash_sites':len(MANIFEST['patches']), 'r1_r2_wait_patches_applied':False}))
+    print(json.dumps({'build':'R3.1', 'splash_sites':len(MANIFEST['patches']), 'r1_r2_wait_patches_applied':False}))
 
 
 def verify(args):
@@ -92,10 +96,11 @@ def verify(args):
         ipa.apply(original, [(dict(p, expected='00' * len(code)), code) for p,code in patches])
     except ValueError: pass
     else: raise ValueError('Wrong site guard was accepted')
-    report = dict(build='R3', status='static_signature_packaging_and_guard_checks_passed', runtime_tested=False,
+    report = dict(build='R3.1', status='static_signature_packaging_and_guard_checks_passed', runtime_tested=False,
                   server_reward_tested=False, input_sha256=digest(Path(args.input).read_bytes()),
                   output_sha256=digest(Path(args.output).read_bytes()), checked_sections=checked,
                   splash_patches=MANIFEST['patches'], r1_r2_wait_patches_applied=False,
+                  identity_checks=['R3.1 literal startup stamp', 'QSR31 isolated runtime classes', 'increased install build number'],
                   limitations=['Video completion and server entitlement remain unverified on device', 'Front entry popup may still appear'])
     Path(args.report).write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps({k:report[k] for k in ['build','status','runtime_tested','server_reward_tested']}))

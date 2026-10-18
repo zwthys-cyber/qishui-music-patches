@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import <mach-o/dyld.h>
 #import "AdFlow.h"
 #import "ProbeCore.h"
 #include <string.h>
@@ -95,6 +96,16 @@ static IMP QSInstall(Class cls, SEL selector, IMP replacement) {
 @implementation QSNoAdsInstaller
 + (void)load {
     @autoreleasepool {
+        QSLog(@"R3_1_RUNTIME_LOADED");
+        NSBundle *bundle = NSBundle.mainBundle;
+        QSLog([NSString stringWithFormat:@"R3_1_BUNDLE build=%@ marker=%@", [bundle objectForInfoDictionaryKey:@"CFBundleVersion"], [bundle objectForInfoDictionaryKey:@"QSProbeBuild"]]);
+        for (uint32_t i = 0; i < _dyld_image_count(); i++) {
+            const char *raw = _dyld_get_image_name(i);
+            if (!raw) continue;
+            NSString *name = [NSString stringWithUTF8String:raw].lastPathComponent;
+            if ([name containsString:@"Qishui"] || [name containsString:@"Probe"])
+                QSLog([NSString stringWithFormat:@"R3_1_LIBRARY %@ header=%p", name, (const void *)_dyld_get_image_header(i)]);
+        }
         Class cls = NSClassFromString(@"BDARVLynxViewController");
         SEL firstFrame = NSSelectorFromString(@"videoFirstFrame");
         SEL sdkFrame = NSSelectorFromString(@"videoFirstFrameSDK");

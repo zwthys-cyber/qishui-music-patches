@@ -1,4 +1,4 @@
-name: Build R3 confirmed-path reward flow and splash policy
+name: Build R3.1 isolated runtime and splash policy
 on:
   workflow_dispatch:
 permissions:
@@ -25,15 +25,15 @@ jobs:
       - name: Compile iOS 17 ARM64 runtime and splash instructions
         run: |
           set -o pipefail
-          xcrun --sdk iphoneos clang -arch arm64 -miphoneos-version-min=17.0 -fobjc-arc -Wall -Wextra -Werror -D'QS_PROBE_BUILD=@"R3"' -dynamiclib -framework Foundation -framework UIKit -Wl,-install_name,@executable_path/Frameworks/QishuiR3.dylib src/AdFlow.m src/NoAdsRuntime.m src/ProbeCore.m src/ProbeUI.m -o build/QishuiR3.dylib 2>&1 | tee build/ios-compile.log
+          xcrun --sdk iphoneos clang -arch arm64 -miphoneos-version-min=17.0 -fobjc-arc -Wall -Wextra -Werror -D'QS_PROBE_BUILD=@"R3.1"' -include src/IdentityR31.h -dynamiclib -framework Foundation -framework UIKit -Wl,-install_name,@executable_path/Frameworks/QishuiR31.dylib src/AdFlow.m src/NoAdsRuntime.m src/ProbeCore.m src/ProbeUI.m -o build/QishuiR31.dylib 2>&1 | tee build/ios-compile.log
           xcrun --sdk iphoneos clang -arch arm64 -miphoneos-version-min=17.0 -c src/WaitPatches.S -o build/WaitPatches.o
           xcrun otool -tvV build/WaitPatches.o > dist/assembled-instructions.txt
-          codesign --force --sign - --timestamp=none build/QishuiR3.dylib
-          codesign --verify --strict build/QishuiR3.dylib
+          codesign --force --sign - --timestamp=none build/QishuiR31.dylib
+          codesign --verify --strict build/QishuiR31.dylib
       - name: Apply guarded splash policy and inject runtime
         run: |
           set -o pipefail
-          python3 scripts/r3.py prepare --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --dylib build/QishuiR3.dylib --work build/r3-work 2>&1 | tee build/prepare.log
+          python3 scripts/r3.py prepare --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --dylib build/QishuiR31.dylib --work build/r3-work 2>&1 | tee build/prepare.log
       - name: Sign and verify app for TrollStore
         run: |
           set -o pipefail
@@ -42,12 +42,12 @@ jobs:
       - name: Package and compare executable sections and resources
         run: |
           set -o pipefail
-          python3 scripts/ipa.py package --work build/r3-work --output dist/Qishui-21.2.0-TrollStore-R3.ipa
-          python3 scripts/r3.py verify --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --dylib build/QishuiR3.dylib --output dist/Qishui-21.2.0-TrollStore-R3.ipa --report dist/verification.json 2>&1 | tee build/verify.log
-          shasum -a 256 dist/Qishui-21.2.0-TrollStore-R3.ipa > dist/SHA256SUMS
+          python3 scripts/ipa.py package --work build/r3-work --output dist/Qishui-21.2.0-TrollStore-R3.1.ipa
+          python3 scripts/r3.py verify --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --dylib build/QishuiR31.dylib --output dist/Qishui-21.2.0-TrollStore-R3.1.ipa --report dist/verification.json 2>&1 | tee build/verify.log
+          shasum -a 256 dist/Qishui-21.2.0-TrollStore-R3.1.ipa > dist/SHA256SUMS
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: Qishui-TrollStore-R3
+          name: Qishui-TrollStore-R3.1
           path: dist/
           retention-days: 14
           if-no-files-found: error

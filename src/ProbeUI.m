@@ -67,7 +67,7 @@ static void QSDescribeViews(UIView *view, NSUInteger depth) {
             probe.hostWindow = host;
             if (probe.button.superview != host) [host addSubview:probe.button];
             CGFloat top = MAX(host.safeAreaInsets.top, 54);
-            probe.button.frame = CGRectMake(12, top + 8, 76, 36);
+            probe.button.frame = CGRectMake(MAX(12, host.bounds.size.width - 116), top + 8, 104, 36);
             [host bringSubviewToFront:probe.button];
         }
     };
