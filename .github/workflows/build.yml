@@ -36,14 +36,14 @@ jobs:
       - name: Package and independently compare signed IPA
         run: |
           set -o pipefail
-          python3 scripts/ipa.py package --work build/work --output dist/Qishui-21.2.0-TrollStore-experimental-r1.ipa
-          python3 scripts/ipa.py verify --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --output dist/Qishui-21.2.0-TrollStore-experimental-r1.ipa --report dist/verification.json 2>&1 | tee build/verify.log
-          shasum -a 256 dist/Qishui-21.2.0-TrollStore-experimental-r1.ipa > dist/SHA256SUMS
+          python3 scripts/ipa.py package --work build/work --output dist/Qishui-21.2.0-TrollStore-experimental-r2.ipa
+          python3 scripts/ipa.py verify --input build/qishui-21.2.0-original.ipa --object build/WaitPatches.o --output dist/Qishui-21.2.0-TrollStore-experimental-r2.ipa --report dist/verification.json 2>&1 | tee build/verify.log
+          shasum -a 256 dist/Qishui-21.2.0-TrollStore-experimental-r2.ipa > dist/SHA256SUMS
           cp build/compile.log dist/
       - name: Upload experimental IPA and evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: Qishui-21.2.0-TrollStore-experimental-r1
+          name: Qishui-21.2.0-TrollStore-experimental-r2
           path: dist/
           if-no-files-found: error
           retention-days: 14

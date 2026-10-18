@@ -13,3 +13,17 @@ _qs_one_second:
     fmov d0, #1.0
     ret
     nop
+
+// s9 holds ceil(video duration * 1000) in these exact callbacks.
+// Only the progress value changes; duration and payload delivery stay intact.
+.globl _qs_full_progress
+_qs_full_progress:
+    fcvt d0, s9
+
+// Limited to the two advertising-player wrapper getters, not TTVideoEngine.
+.globl _qs_completed_watch_time
+_qs_completed_watch_time:
+    movz x8, #0x40ac, lsl #48
+    movk x8, #0x2000, lsl #32
+    fmov d0, x8
+    ret

@@ -90,6 +90,8 @@ def replacements(obj):
     result = []
     expected_stubs = {
         'qs_skip_wait': bytes.fromhex('1f2003d5'),
+        'qs_full_progress': struct.pack('<I', 0x1e22c120),
+        'qs_completed_watch_time': struct.pack('<IIII', 0xd2e81588, 0xf2c40008, 0x9e670100, 0xd65f03c0),
         'qs_finish_native': struct.pack('<I', 0x14000026),
         'qs_one_second': bytes.fromhex('00106e1ec0035fd61f2003d5'),
     }

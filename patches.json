@@ -32,6 +32,34 @@
       "expected": "882c0ab008cd89b9de7cf117",
       "symbol": "qs_one_second",
       "reason": "BDARVADVideoInfo effectiveInspireTime: return double 1.0"
+    },
+    {
+      "name": "lynx_video_progress",
+      "offset": 7160032,
+      "expected": "00096a1e",
+      "symbol": "qs_full_progress",
+      "reason": "BDARVLynxUIVideoNew progress event: report the already-computed full duration in milliseconds"
+    },
+    {
+      "name": "refactor_lynx_video_progress",
+      "offset": 7487536,
+      "expected": "00096a1e",
+      "symbol": "qs_full_progress",
+      "reason": "BDARVRefactorLynxUIVideoNew progress event: report the already-computed full duration in milliseconds"
+    },
+    {
+      "name": "ad_player_watch_time",
+      "offset": 7428620,
+      "expected": "e923bd6df44f01a9fd7b02a9fd830091",
+      "symbol": "qs_completed_watch_time",
+      "reason": "BDARVPlayer durationWatched: experimental completed local watch-time value"
+    },
+    {
+      "name": "ad_sdk_player_watch_time",
+      "offset": 7703416,
+      "expected": "e923bd6df44f01a9fd7b02a9fd830091",
+      "symbol": "qs_completed_watch_time",
+      "reason": "BDASDKVideoPlayer durationWatched: experimental completed local watch-time value"
     }
   ]
 }

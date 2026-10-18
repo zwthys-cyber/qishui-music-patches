@@ -43,3 +43,17 @@
 - `[incentive]` 的发奖校验参数失败提示
 
 这些静态证据说明存在网络发奖/校验流程，但不能单凭字符串确定哪个入口的请求字段、服务端判定条件或最终权益状态。必须结合真机结果继续分析。首版是本地等待实验，不是已验证的免费听歌解锁。
+
+## r1 真机反馈与 r2 假设
+
+用户确认 r1 在“看视频全天免费听”入口中仍需完整播放，完整播放后才获得听歌权限。故 r1 **没有达到目标**。该反馈不能单独确定活动具体选择了哪个视频实现，也不能证明提前完成时服务端会接受发奖。
+
+进一步静态分析发现：
+
+- `BDARVLynxUIVideoNew.player:playbackTimeChanged:`（0x1006d4050）直接用回调参数生成 `progress` 毫秒值。它并不通过 r1 修改的有效时长 getter 计算该进度。
+- `BDARVRefactorLynxUIVideoNew.videoPlayer:playbackTime:`（0x100723f84）存在相同的进度上报实现。
+- 两个回调分别在 0x1006d40e0 / 0x100724030 用 `fmul d0,d8,d10` 生成 progress。此时 s9 已持有 ceil(duration * 1000)，下一步调用 numberWithFloat 构造字典中的 progress 值。对应 CFString 的内容已经静态解析为 `progress`，另一项为 `duration`。
+- r2 将这两处指令替换为 `fcvt d0,s9`，使第一次正常进度事件达到全长。该改动是否覆盖用户路径仍需真机确认。
+- 观看累计时间经广告播放器自己的 `durationWatched` 包装 getter 读取。r2 仅改 BDARVPlayer（0x100715a0c）与 BDASDKVideoPlayer（0x100758b78），返回 double 3600.0，尝试满足本地观看累计判断；没有修改通用 TTVideoEngine 或音乐播放器。
+
+r2 保留 r1 四处补丁，总计八处修改。没有强制设置服务端成功响应，不能据此承诺发奖或完整音乐权限。CI 仍只负责指令、结构、签名和打包验证。用户看到的前置广告入口弹窗可能继续出现；本次实验针对进入视频后的等待。
