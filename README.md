@@ -23,3 +23,11 @@
 CI 检查精确输入 SHA256、原始指令、指令位置、Apple 汇编输出、错误输入拒绝、修改范围、签名、ZIP、签名后各 section 字节及资源保持情况。它不代表真机启动、登录、音乐播放或服务端发奖通过。
 
 真机需确认：启动和登录；触发“看视频免费听”；是否能提前结束；关闭页面后是否获得时长；完整播放原本需要广告权益的歌曲；重启后权益是否仍可用。若失败，需提供界面提示和具体触发入口，以区分本地广告路径未覆盖和服务端未发奖。
+
+## 当前构建状态
+
+2026-10-18 首次 Actions 运行 [39136886542](https://github.com/zwthys-cyber/qishui-music-patches/actions/runs/39136886542) 在 runner 启动前被账户账单限制拦截，GitHub 返回：
+
+> The job was not started because recent account payments have failed or your spending limit needs to be increased.
+
+因此编译、补丁验证、签名和 IPA 打包均未执行，也没有可安装成品。需要账户在 Settings → Billing & plans 处理付款或 Actions 支出上限，再重跑本工作流。没有将编译或验证迁回服务器。
