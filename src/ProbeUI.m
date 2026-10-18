@@ -20,23 +20,9 @@ static void QSDescribeViews(UIView *view, NSUInteger depth) {
     for (UIView *child in view.subviews) QSDescribeViews(child, depth + 1);
 }
 
-@interface QSProbeController : UIViewController
-@end
-@interface QSProbeWindow : UIWindow
-@end
-@implementation QSProbeWindow
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-    UIView *hit = [super hitTest:point withEvent:event];
-    return [hit isKindOfClass:UIButton.class] ? hit : nil;
-}
-@end
-@implementation QSProbeController
-- (void)loadView { self.view = [[UIView alloc] initWithFrame:UIScreen.mainScreen.bounds]; }
-- (BOOL)prefersStatusBarHidden { return NO; }
-@end
-
 @interface QSProbe : NSObject
-@property (nonatomic, strong) QSProbeWindow *window;
+@property (nonatomic, strong) UIButton *button;
+@property (nonatomic, weak) UIWindow *hostWindow;
 @property (nonatomic, strong) NSTimer *timer;
 + (instancetype)shared;
 - (void)attach;
@@ -50,43 +36,46 @@ static void QSDescribeViews(UIView *view, NSUInteger depth) {
     return probe;
 }
 - (void)attach {
-    if (self.window) return;
+    if (self.button) return;
     UIWindowScene *scene = nil;
     for (UIScene *candidate in UIApplication.sharedApplication.connectedScenes)
         if ([candidate isKindOfClass:UIWindowScene.class] && candidate.activationState == UISceneActivationStateForegroundActive) {
             scene = (UIWindowScene *)candidate; break;
         }
     if (!scene) return;
-    self.window = [[QSProbeWindow alloc] initWithWindowScene:scene];
-    self.window.frame = scene.coordinateSpace.bounds;
-    self.window.windowLevel = UIWindowLevelAlert + 50;
-    self.window.backgroundColor = UIColor.clearColor;
-    self.window.rootViewController = [QSProbeController new];
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
     button.backgroundColor = [UIColor colorWithRed:0.1 green:0.35 blue:0.8 alpha:0.9];
     button.layer.cornerRadius = 8;
     [button setTitle:@"诊断 D1" forState:UIControlStateNormal];
     [button setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
-    CGFloat top = MAX(scene.windows.firstObject.safeAreaInsets.top, 54);
-    button.frame = CGRectMake(12, top + 8, 76, 36);
     [button addTarget:self action:@selector(exportLog) forControlEvents:UIControlEventTouchUpInside];
-    [self.window.rootViewController.view addSubview:button];
-    self.window.hidden = NO;
+    self.button = button;
     QSLog(@"PROBE_D1_UI_ATTACHED");
     __weak QSProbe *weakSelf = self;
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:2 repeats:YES block:^(__unused NSTimer *timer) {
+    void (^refresh)(void) = ^{
         QSProbe *probe = weakSelf;
+        UIWindow *host = nil;
         for (UIWindow *window in scene.windows) {
-            if (window == probe.window) continue;
+            if (window.hidden || !window.rootViewController) continue;
             QSDescribeViews(window, 0);
+            if (window.isKeyWindow || (!host && window.windowLevel == UIWindowLevelNormal)) host = window;
         }
-    }];
+        if (host) {
+            probe.hostWindow = host;
+            if (probe.button.superview != host) [host addSubview:probe.button];
+            CGFloat top = MAX(host.safeAreaInsets.top, 54);
+            probe.button.frame = CGRectMake(12, top + 8, 76, 36);
+            [host bringSubviewToFront:probe.button];
+        }
+    };
+    refresh();
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:2 repeats:YES block:^(__unused NSTimer *timer) { refresh(); }];
 }
 - (void)exportLog {
-    UIWindowScene *scene = self.window.windowScene;
+    UIWindowScene *scene = self.hostWindow.windowScene;
     UIViewController *top = nil;
     for (UIWindow *window in scene.windows) {
-        if (window == self.window || window.hidden || !window.rootViewController) continue;
+        if (window.hidden || !window.rootViewController) continue;
         if (window.isKeyWindow || !top) top = window.rootViewController;
     }
     while (top.presentedViewController) top = top.presentedViewController;
